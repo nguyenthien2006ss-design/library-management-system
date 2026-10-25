@@ -1,0 +1,12 @@
+@{ ViewData["Title"] = "Trả sách"; }
+<h2 class="fw-bold mb-3">Trả sách</h2>
+<form asp-action="ReturnBook" method="post" class="panel p-4 p-md-5" style="max-width:560px">
+    <div class="mb-4">
+        <label class="form-label">Mã sách *</label>
+        <input name="copyCode" class="form-control" placeholder="Ví dụ: S001-002" required autofocus />
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-brand px-4">Ghi nhận trả</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Quay lại</a>
+    </div>
+</form>

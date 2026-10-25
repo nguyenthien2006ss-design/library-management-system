@@ -1,0 +1,24 @@
+@model LibraryCard
+@{ ViewData["Title"] = "Cấp thẻ mới"; }
+<h2 class="fw-bold mb-3">Cấp thẻ thư viện</h2>
+<form asp-action="Create" method="post" class="panel p-4 p-md-5" style="max-width:580px">
+    <div class="mb-3">
+        <label class="form-label">Số thẻ *</label>
+        <input asp-for="CardNumber" class="form-control" />
+        <span asp-validation-for="CardNumber" class="text-danger small"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Họ tên sinh viên *</label>
+        <input asp-for="StudentName" class="form-control" />
+        <span asp-validation-for="StudentName" class="text-danger small"></span>
+    </div>
+    <div class="mb-4">
+        <label class="form-label">Ngày hết hạn *</label>
+        <input asp-for="ExpiryDate" type="date" class="form-control" />
+        <span asp-validation-for="ExpiryDate" class="text-danger small"></span>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-brand px-4">Cấp thẻ</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Quay lại</a>
+    </div>
+</form>

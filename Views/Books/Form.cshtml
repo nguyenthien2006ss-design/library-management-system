@@ -1,0 +1,60 @@
+@model Book
+@{
+    ViewData["Title"] = Model.Id == 0 ? "Thêm sách mới" : "Sửa thông tin sách";
+    var types = (List<MaterialType>)ViewBag.MaterialTypes;
+}
+<h2 class="fw-bold mb-3">@ViewData["Title"]</h2>
+<form asp-action="Save" method="post" class="panel p-4 p-md-5" style="max-width:920px">
+    <input type="hidden" asp-for="Id" />
+    <div class="row g-4">
+        <div class="col-md-4">
+            <label class="form-label">Mã sách *</label>
+            <input asp-for="Code" class="form-control" />
+            <span asp-validation-for="Code" class="text-danger small"></span>
+        </div>
+        <div class="col-md-8">
+            <label class="form-label">Tên sách *</label>
+            <input asp-for="Title" class="form-control" />
+            <span asp-validation-for="Title" class="text-danger small"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Tác giả *</label>
+            <input asp-for="Author" class="form-control" />
+            <span asp-validation-for="Author" class="text-danger small"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Thể loại</label>
+            <input asp-for="Category" class="form-control" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Năm xuất bản *</label>
+            <input asp-for="PublishYear" class="form-control" />
+            <span asp-validation-for="PublishYear" class="text-danger small"></span>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Nhà xuất bản</label>
+            <input asp-for="Publisher" class="form-control" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Loại tài liệu *</label>
+            <select asp-for="MaterialTypeId" class="form-select" asp-items='@(new SelectList(types, "Id", "Name"))'></select>
+            <span asp-validation-for="MaterialTypeId" class="text-danger small"></span>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Màu bìa minh họa</label>
+            <input asp-for="CoverColor" type="color" class="form-control form-control-color w-100" />
+        </div>
+        <div class="col-md-8">
+            <label class="form-label">Đường dẫn ảnh bìa thật (tùy chọn)</label>
+            <input asp-for="CoverUrl" class="form-control" placeholder="https://... để trống sẽ dùng ảnh minh họa tự động" />
+        </div>
+        <div class="col-12">
+            <label class="form-label">Giới thiệu nội dung</label>
+            <textarea asp-for="Description" rows="4" class="form-control"></textarea>
+        </div>
+    </div>
+    <div class="mt-4 d-flex gap-2">
+        <button class="btn btn-brand px-4">Lưu</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Quay lại</a>
+    </div>
+</form>

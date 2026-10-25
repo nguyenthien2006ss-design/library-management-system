@@ -1,0 +1,57 @@
+@model StatsResult
+@{
+    ViewData["Title"] = "Thống kê";
+    int maxBook = Model.ByBook.Select(r => r.Count).DefaultIfEmpty(1).Max();
+    int maxMonth = Model.ByMonth.Select(r => r.Count).DefaultIfEmpty(1).Max();
+}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <h2 class="fw-bold mb-0">Thống kê mượn / trả</h2>
+    <form method="get" class="d-flex gap-2 align-items-center">
+        <input type="date" name="from" value="@ViewBag.From" class="form-control" />
+        <span class="text-muted">→</span>
+        <input type="date" name="to" value="@ViewBag.To" class="form-control" />
+        <button class="btn btn-brand">Thống kê</button>
+    </form>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="panel p-4 h-100">
+            <div class="section-title">Theo sách</div>
+            @foreach (var r in Model.ByBook)
+            {
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between small mb-1"><span class="text-truncate me-2">@r.Label</span><strong>@r.Count</strong></div>
+                    <div class="bar-track"><div class="bar-fill" style="width:@(r.Count * 100 / maxBook)%"></div></div>
+                </div>
+            }
+            @if (!Model.ByBook.Any()) { <div class="text-muted">Chưa có dữ liệu.</div> }
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="panel p-4 h-100">
+            <div class="section-title">Theo sinh viên</div>
+            @foreach (var r in Model.ByStudent)
+            {
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between small mb-1"><span class="text-truncate me-2">@r.Label</span><strong>@r.Count</strong></div>
+                    <div class="bar-track"><div class="bar-fill" style="width:@(r.Count * 100 / maxBook)%"></div></div>
+                </div>
+            }
+            @if (!Model.ByStudent.Any()) { <div class="text-muted">Chưa có dữ liệu.</div> }
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="panel p-4 h-100">
+            <div class="section-title">Theo tháng</div>
+            @foreach (var r in Model.ByMonth)
+            {
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between small mb-1"><span>@r.Label</span><strong>@r.Count</strong></div>
+                    <div class="bar-track"><div class="bar-fill" style="width:@(r.Count * 100 / maxMonth)%"></div></div>
+                </div>
+            }
+            @if (!Model.ByMonth.Any()) { <div class="text-muted">Chưa có dữ liệu.</div> }
+        </div>
+    </div>
+</div>

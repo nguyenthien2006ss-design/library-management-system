@@ -1,0 +1,47 @@
+@{ ViewData["Title"] = "Đăng nhập"; }
+<div class="row justify-content-center align-items-center" style="min-height:70vh">
+    <div class="col-lg-9">
+        <div class="panel overflow-hidden">
+            <div class="row g-0">
+                <div class="col-md-6 hero m-0 rounded-0 d-flex flex-column justify-content-center" style="min-height:360px">
+                    <h2 class="fw-bold">Thư viện trong tầm tay</h2>
+                    <p class="opacity-75">Tìm sách, mượn trực tuyến, theo dõi hạn trả và hồ sơ thẻ thư viện của bạn.</p>
+                    <ul class="list-unstyled mb-0 mt-3">
+                        <li class="mb-2"><i class="bi bi-check2-circle me-2"></i>Mượn tối đa 3 cuốn, 15 ngày</li>
+                        <li class="mb-2"><i class="bi bi-check2-circle me-2"></i>Ảnh bìa và thông tin từng cuốn</li>
+                        <li><i class="bi bi-check2-circle me-2"></i>Theo dõi lịch sử mượn trả</li>
+                    </ul>
+                </div>
+                <div class="col-md-6 p-4 p-md-5">
+                    <h4 class="fw-bold mb-1">Đăng nhập</h4>
+                    <p class="text-muted small mb-4">Sinh viên và thủ thư dùng chung màn hình này.</p>
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger">@ViewBag.Error</div>
+                    }
+                    <form method="post" asp-action="Login">
+                        <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+                        <div class="mb-3">
+                            <label class="form-label">Tên đăng nhập</label>
+                            <input name="userName" class="form-control" required autofocus />
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Mật khẩu</label>
+                            <input type="password" name="password" class="form-control" required />
+                        </div>
+                        <button class="btn btn-brand w-100 py-2">Đăng nhập</button>
+                    </form>
+                    <div class="text-center mt-4 small">
+                        Sinh viên mới? <a asp-action="Register">Đăng ký tài khoản bằng thẻ thư viện</a>
+                    </div>
+                    <div class="mt-4 p-3 rounded-3" style="background:#f8fafc" >
+                        <div class="small fw-semibold mb-1">Tài khoản demo</div>
+                        <div class="small text-muted">Sinh viên: <code>sv001</code> / <code>sinhvien123</code></div>
+                        <div class="small text-muted">Thủ thư: <code>thuthu</code> / <code>thuthu123</code></div>
+                        <div class="small text-muted">Quản trị: <code>admin</code> / <code>admin123</code></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

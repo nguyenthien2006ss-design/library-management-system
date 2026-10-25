@@ -1,0 +1,32 @@
+@model List<AuditLog>
+@{ ViewData["Title"] = "Nhật ký"; }
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <h2 class="fw-bold mb-0">Nhật ký hệ thống</h2>
+    <form method="get" class="d-flex gap-2 align-items-center">
+        <input type="date" name="from" value="@ViewBag.From" class="form-control" />
+        <span class="text-muted">→</span>
+        <input type="date" name="to" value="@ViewBag.To" class="form-control" />
+        <button class="btn btn-brand">Xem</button>
+    </form>
+</div>
+<div class="table-responsive">
+<table class="table-modern table mb-0">
+    <thead><tr><th>Thời gian</th><th>Người thực hiện</th><th>Hành động</th><th>Đối tượng</th><th>Chi tiết</th></tr></thead>
+    <tbody>
+    @foreach (var a in Model)
+    {
+        <tr>
+            <td class="small text-nowrap">@a.Timestamp.ToString("dd/MM/yyyy HH:mm:ss")</td>
+            <td><span class="chip">@a.UserName</span></td>
+            <td class="fw-semibold">@a.Action</td>
+            <td class="small text-muted">@a.Entity</td>
+            <td>@a.Details</td>
+        </tr>
+    }
+    @if (!Model.Any())
+    {
+        <tr><td colspan="5" class="text-center text-muted py-4">Không có nhật ký trong khoảng thời gian này.</td></tr>
+    }
+    </tbody>
+</table>
+</div>
