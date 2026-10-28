@@ -1,0 +1,31 @@
+@model List<LibraryCard>
+@{ ViewData["Title"] = "Thẻ thư viện"; }
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div><h2 class="fw-bold mb-0">Thẻ thư viện</h2><div class="text-muted small">@Model.Count thẻ</div></div>
+    <a class="btn btn-brand" asp-action="Create"><i class="bi bi-person-plus me-1"></i>Cấp thẻ mới</a>
+</div>
+<form method="get" class="row g-2 mb-4">
+    <div class="col-md-5"><input name="q" value="@ViewBag.Q" class="form-control" placeholder="Tìm theo số thẻ hoặc họ tên" /></div>
+    <div class="col-md-2"><button class="btn btn-outline-primary w-100">Tìm</button></div>
+</form>
+<div class="table-responsive">
+<table class="table-modern table mb-0">
+    <thead><tr><th>Số thẻ</th><th>Sinh viên</th><th>Hết hạn</th><th>Tình trạng</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var c in Model)
+    {
+        var valid = LibraryService.IsCardValid(c, out var reason);
+        <tr>
+            <td><strong>@c.CardNumber</strong></td>
+            <td>@c.StudentName</td>
+            <td>@c.ExpiryDate.ToString("dd/MM/yyyy")</td>
+            <td>
+                @if (valid) { <span class="status st-available">Sử dụng được</span> }
+                else { <span class="status st-lost">@reason</span> }
+            </td>
+            <td class="text-end"><a asp-action="Details" asp-route-id="@c.Id" class="btn btn-sm btn-outline-primary">Chi tiết</a></td>
+        </tr>
+    }
+    </tbody>
+</table>
+</div>

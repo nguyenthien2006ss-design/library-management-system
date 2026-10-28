@@ -1,0 +1,41 @@
+@model List<Incident>
+@{ ViewData["Title"] = "Báo cáo thanh lý"; }
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div><h2 class="fw-bold mb-0">Sách mất / hỏng để thanh lý</h2><div class="text-muted small">Năm @ViewBag.Year</div></div>
+    <form method="get" class="d-flex gap-2">
+        <input type="number" name="year" value="@ViewBag.Year" class="form-control" style="max-width:120px" />
+        <button class="btn btn-outline-primary">Xem</button>
+        <a class="btn btn-success" asp-action="LiquidationCsv" asp-route-year="@ViewBag.Year"><i class="bi bi-filetype-csv me-1"></i>Xuất CSV</a>
+    </form>
+</div>
+<div class="row g-3 mb-4">
+    <div class="col-md-4"><div class="stat"><div class="icon ic-blue"><i class="bi bi-list-ul"></i></div><div><div class="label">Tổng số</div><div class="value">@Model.Count</div></div></div></div>
+    <div class="col-md-4"><div class="stat"><div class="icon ic-red"><i class="bi bi-x-octagon"></i></div><div><div class="label">Mất</div><div class="value">@Model.Count(i => i.Type == IncidentType.Lost)</div></div></div></div>
+    <div class="col-md-4"><div class="stat"><div class="icon ic-amber"><i class="bi bi-bandaid"></i></div><div><div class="label">Hỏng</div><div class="value">@Model.Count(i => i.Type == IncidentType.Damaged)</div></div></div></div>
+</div>
+<div class="table-responsive">
+<table class="table-modern table mb-0">
+    <thead><tr><th>STT</th><th>Ngày báo</th><th>Loại</th><th>Mã sách</th><th>Tên sách</th><th>Số KS</th><th>Sinh viên</th><th>Ghi chú</th><th>Bồi thường</th></tr></thead>
+    <tbody>
+    @{ int stt = 1; }
+    @foreach (var i in Model)
+    {
+        <tr>
+            <td>@(stt++)</td>
+            <td>@i.ReportedDate.ToString("dd/MM/yyyy")</td>
+            <td><span class='status @(i.Type == IncidentType.Lost ? "st-lost" : "st-damaged")'>@Labels.Incident(i.Type)</span></td>
+            <td>@i.BookCopy.Book.Code</td>
+            <td>@i.BookCopy.Book.Title</td>
+            <td>@i.BookCopy.ControlNumber</td>
+            <td>@i.Card.CardNumber · @i.Card.StudentName</td>
+            <td>@i.Note</td>
+            <td>@(i.CompensatedDate == null ? "Chưa" : "Đã")</td>
+        </tr>
+    }
+    @if (!Model.Any())
+    {
+        <tr><td colspan="9" class="text-center text-muted py-4">Không có sự cố trong năm này.</td></tr>
+    }
+    </tbody>
+</table>
+</div>

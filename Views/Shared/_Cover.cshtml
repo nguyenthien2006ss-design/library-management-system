@@ -1,0 +1,3 @@
+@model Book
+<img class="cover" src="@(string.IsNullOrEmpty(Model.CoverUrl) ? Url.Action("Get", "Cover", new { id = Model.Id }) : Model.CoverUrl)"
+     alt="Bìa sách @Model.Title" loading="lazy" />

@@ -1,0 +1,60 @@
+@model List<Book>
+@{
+    ViewData["Title"] = "Kho sách";
+    var types = (List<MaterialType>)ViewBag.MaterialTypes;
+    var sel = (int?)ViewBag.Selected;
+}
+<div class="hero">
+    <h2 class="mb-1">Khám phá kho sách</h2>
+    <p class="mb-3 opacity-75">Tìm sách, xem tình trạng từng cuốn và thêm vào giỏ mượn.</p>
+    <form method="get" class="row g-2">
+        <div class="col-md-6"><input name="q" value="@ViewBag.Q" class="form-control form-control-lg" placeholder="Tìm theo tên sách, tác giả, mã sách..." /></div>
+        <div class="col-md-4">
+            <select name="materialTypeId" class="form-select form-select-lg">
+                <option value="">Tất cả loại tài liệu</option>
+                @foreach (var t in types)
+                {
+                    <option value="@t.Id" selected='@(sel == t.Id)'>@t.Name</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2"><button class="btn btn-light btn-lg w-100 fw-semibold">Tìm kiếm</button></div>
+    </form>
+</div>
+
+<div class="d-flex flex-wrap gap-2 mb-4">
+    <a class='chip @(sel == null ? "active" : "")' asp-action="Index">Tất cả</a>
+    @foreach (var t in types)
+    {
+        <a class='chip @(sel == t.Id ? "active" : "")' asp-action="Index" asp-route-materialTypeId="@t.Id" asp-route-q="@ViewBag.Q">@t.Name</a>
+    }
+</div>
+
+@if (!Model.Any())
+{
+    <div class="empty-state"><i class="bi bi-search d-block"></i>Không tìm thấy tài liệu phù hợp.</div>
+}
+else
+{
+    <div class="row row-cols-2 row-cols-md-3 row-cols-xl-5 g-4">
+        @foreach (var b in Model)
+        {
+            var avail = b.Copies.Count(c => c.Status == CopyStatus.Available);
+            <div class="col">
+                <a asp-action="Details" asp-route-id="@b.Id" class="text-decoration-none">
+                    <div class="card book-card">
+                        <partial name="_Cover" model="b" />
+                        <div class="card-body">
+                            <div class="title text-truncate" title="@b.Title">@b.Title</div>
+                            <div class="small text-muted text-truncate">@b.Author</div>
+                            <div class="mt-2 d-flex justify-content-between align-items-center">
+                                <span class="small text-muted">@b.MaterialType?.Name</span>
+                                <span class='status @(avail > 0 ? "st-available" : "st-lost")'>@(avail > 0 ? $"Còn {avail}" : "Hết")</span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+}
