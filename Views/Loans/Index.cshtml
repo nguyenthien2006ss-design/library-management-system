@@ -1,0 +1,44 @@
+@model List<Loan>
+@{ ViewData["Title"] = "Mượn / Trả sách"; }
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div><h2 class="fw-bold mb-0">Phiếu mượn đang mở</h2><div class="text-muted small">@Model.Count phiếu</div></div>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-brand" asp-action="Borrow"><i class="bi bi-plus-lg me-1"></i>Mượn sách</a>
+        <a class="btn btn-outline-primary" asp-action="ReturnBook"><i class="bi bi-box-arrow-in-down me-1"></i>Trả sách</a>
+        <a class="btn btn-outline-danger" asp-action="ReportIncident"><i class="bi bi-exclamation-octagon me-1"></i>Báo mất / hỏng</a>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="panel empty-state"><i class="bi bi-inbox d-block"></i>Hiện không có phiếu mượn nào đang mở.</div>
+}
+<div class="row g-3">
+@foreach (var l in Model)
+{
+    var overdue = l.DueDate.Date < DateTime.Today;
+    <div class="col-lg-6">
+        <div class="panel h-100 overflow-hidden">
+            <div class="p-3 d-flex justify-content-between flex-wrap gap-2" style="background:#f8fafc">
+                <div><strong>@l.Card.CardNumber</strong> · @l.Card.StudentName</div>
+                <div class="small">
+                    Mượn @l.LoanDate.ToString("dd/MM/yyyy") · Hạn @l.DueDate.ToString("dd/MM/yyyy")
+                    @if (overdue) { <span class="status st-lost ms-1">Quá hạn</span> }
+                </div>
+            </div>
+            <div class="p-3">
+                @foreach (var it in l.Items.Where(x => x.ReturnDate == null))
+                {
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <div class="thumb"><partial name="_Cover" model="it.BookCopy.Book" /></div>
+                        <div>
+                            <div class="fw-semibold">@it.BookCopy.Book.Title</div>
+                            <div class="small text-muted">@it.BookCopy.Book.Code-@it.BookCopy.ControlNumber</div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+</div>

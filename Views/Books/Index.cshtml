@@ -1,0 +1,46 @@
+@model List<Book>
+@{
+    ViewData["Title"] = "Danh mục sách";
+    var types = (List<MaterialType>)ViewBag.MaterialTypes;
+    var sel = (int?)ViewBag.Selected;
+}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div><h2 class="fw-bold mb-0">Danh mục sách</h2><div class="text-muted small">@Model.Count tên sách</div></div>
+    <a class="btn btn-brand" asp-action="Create"><i class="bi bi-plus-lg me-1"></i>Thêm sách</a>
+</div>
+<form class="row g-2 mb-4" method="get">
+    <div class="col-md-5"><input name="q" value="@ViewBag.Q" class="form-control" placeholder="Tìm theo mã, tên, tác giả, thể loại..." /></div>
+    <div class="col-md-3">
+        <select name="materialTypeId" class="form-select">
+            <option value="">Tất cả loại tài liệu</option>
+            @foreach (var t in types)
+            {
+                <option value="@t.Id" selected='@(sel == t.Id)'>@t.Name</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-2"><button class="btn btn-outline-primary w-100">Lọc</button></div>
+</form>
+
+<div class="table-responsive">
+<table class="table-modern table mb-0">
+    <thead><tr><th>Bìa</th><th>Mã</th><th>Tên sách</th><th>Tác giả</th><th>Loại</th><th>Năm</th><th>Đầu sách</th><th>Còn</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var b in Model)
+    {
+        var avail = b.Copies.Count(c => c.Status == CopyStatus.Available);
+        <tr>
+            <td><div class="thumb"><partial name="_Cover" model="b" /></div></td>
+            <td><strong>@b.Code</strong></td>
+            <td>@b.Title</td>
+            <td>@b.Author</td>
+            <td>@b.MaterialType?.Name</td>
+            <td>@b.PublishYear</td>
+            <td>@b.Copies.Count</td>
+            <td><span class='status @(avail > 0 ? "st-available" : "st-lost")'>@avail</span></td>
+            <td class="text-end"><a asp-action="Details" asp-route-id="@b.Id" class="btn btn-sm btn-outline-primary">Chi tiết</a></td>
+        </tr>
+    }
+    </tbody>
+</table>
+</div>

@@ -1,0 +1,64 @@
+@{ ViewData["Title"] = "Tổng quan"; var recent = (List<Loan>)ViewBag.Recent; }
+<div class="hero">
+    <h2 class="mb-1">Xin chào, @User.Identity.Name</h2>
+    <p class="mb-0 opacity-75">Tổng quan hoạt động thư viện hôm nay.</p>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-xl-3"><div class="stat"><div class="icon ic-blue"><i class="bi bi-journal-bookmark"></i></div><div><div class="label">Tên sách</div><div class="value">@ViewBag.Titles</div></div></div></div>
+    <div class="col-6 col-xl-3"><div class="stat"><div class="icon ic-teal"><i class="bi bi-stack"></i></div><div><div class="label">Đầu sách (bản sao)</div><div class="value">@ViewBag.Copies</div></div></div></div>
+    <div class="col-6 col-xl-3"><div class="stat"><div class="icon ic-green"><i class="bi bi-check2-circle"></i></div><div><div class="label">Còn trong kho</div><div class="value">@ViewBag.Available</div></div></div></div>
+    <div class="col-6 col-xl-3"><div class="stat"><div class="icon ic-pink"><i class="bi bi-arrow-left-right"></i></div><div><div class="label">Phiếu mượn đang mở</div><div class="value">@ViewBag.OpenLoans</div></div></div></div>
+    <div class="col-6 col-xl-3"><div class="stat"><div class="icon ic-red"><i class="bi bi-alarm"></i></div><div><div class="label">Sách quá hạn</div><div class="value">@ViewBag.Overdue</div></div></div></div>
+    <div class="col-6 col-xl-3"><div class="stat"><div class="icon ic-red"><i class="bi bi-lock"></i></div><div><div class="label">Thẻ đang bị khóa</div><div class="value">@ViewBag.Locked</div></div></div></div>
+    <div class="col-6 col-xl-3"><div class="stat"><div class="icon ic-amber"><i class="bi bi-exclamation-triangle"></i></div><div><div class="label">Sự cố chưa bồi thường</div><div class="value">@ViewBag.Pending</div></div></div></div>
+    <div class="col-6 col-xl-3"><div class="stat"><div class="icon ic-blue"><i class="bi bi-people"></i></div><div><div class="label">Sinh viên có tài khoản</div><div class="value">@ViewBag.Students</div></div></div></div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="panel p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="section-title mb-0">Phiếu mượn sắp đến hạn</div>
+                <a asp-controller="Loans" asp-action="Index" class="small">Xem tất cả →</a>
+            </div>
+            @if (!recent.Any())
+            {
+                <div class="empty-state"><i class="bi bi-inbox d-block"></i>Chưa có phiếu mượn nào đang mở.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                <table class="table-modern table mb-0">
+                    <thead><tr><th>Sinh viên</th><th>Sách đang mượn</th><th>Hạn trả</th></tr></thead>
+                    <tbody>
+                    @foreach (var l in recent)
+                    {
+                        var late = l.DueDate.Date < DateTime.Today;
+                        <tr>
+                            <td><strong>@l.Card.StudentName</strong><div class="small text-muted">@l.Card.CardNumber</div></td>
+                            <td>@string.Join(", ", l.Items.Where(i => i.ReturnDate == null).Select(i => i.BookCopy.Book.Title))</td>
+                            <td>
+                                @l.DueDate.ToString("dd/MM/yyyy")
+                                @if (late) { <span class="status st-lost ms-1">Quá hạn</span> }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="panel p-4">
+            <div class="section-title">Thao tác nhanh</div>
+            <div class="d-grid gap-2">
+                <a class="btn btn-brand" asp-controller="Loans" asp-action="Borrow"><i class="bi bi-plus-circle me-2"></i>Mượn sách</a>
+                <a class="btn btn-outline-primary" asp-controller="Loans" asp-action="ReturnBook"><i class="bi bi-box-arrow-in-down me-2"></i>Trả sách</a>
+                <a class="btn btn-outline-danger" asp-controller="Loans" asp-action="ReportIncident"><i class="bi bi-exclamation-octagon me-2"></i>Báo mất / hỏng</a>
+                <a class="btn btn-outline-secondary" asp-controller="Cards" asp-action="Create"><i class="bi bi-person-plus me-2"></i>Cấp thẻ mới</a>
+            </div>
+        </div>
+    </div>
+</div>

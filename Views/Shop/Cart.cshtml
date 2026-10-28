@@ -1,0 +1,44 @@
+@model List<BookCopy>
+@{ ViewData["Title"] = "Giỏ mượn"; }
+<h2 class="fw-bold mb-3">Giỏ mượn sách</h2>
+@if (!Model.Any())
+{
+    <div class="panel empty-state">
+        <i class="bi bi-bag d-block"></i>
+        <p>Giỏ mượn đang trống.</p>
+        <a class="btn btn-brand" asp-action="Index">Khám phá kho sách</a>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        <div class="col-lg-8">
+            @foreach (var c in Model)
+            {
+                var code = $"{c.Book.Code}-{c.ControlNumber}";
+                <div class="panel p-3 mb-3 d-flex align-items-center gap-3">
+                    <div class="thumb"><partial name="_Cover" model="c.Book" /></div>
+                    <div class="flex-grow-1">
+                        <div class="fw-semibold">@c.Book.Title</div>
+                        <div class="small text-muted">@c.Book.Author · Mã @code</div>
+                    </div>
+                    <form asp-action="RemoveFromCart" method="post">
+                        <input type="hidden" name="code" value="@code" />
+                        <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                    </form>
+                </div>
+            }
+        </div>
+        <div class="col-lg-4">
+            <div class="panel p-4 sticky-top" style="top:95px">
+                <div class="section-title">Tóm tắt phiếu mượn</div>
+                <div class="d-flex justify-content-between mb-2"><span class="text-muted">Số cuốn</span><strong>@Model.Count / 3</strong></div>
+                <div class="d-flex justify-content-between mb-3"><span class="text-muted">Hạn trả</span><strong>@DateTime.Today.AddDays(15).ToString("dd/MM/yyyy")</strong></div>
+                <div class="small text-muted mb-3">Thẻ phải còn hiệu lực và không còn sách chưa trả.</div>
+                <form asp-action="Checkout" method="post">
+                    <button class="btn btn-brand w-100 py-2"><i class="bi bi-check2-circle me-1"></i>Xác nhận mượn</button>
+                </form>
+            </div>
+        </div>
+    </div>
+}

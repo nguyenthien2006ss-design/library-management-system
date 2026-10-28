@@ -1,0 +1,137 @@
+@model LibraryCard
+@{
+    ViewData["Title"] = "Hồ sơ của tôi";
+    var openLoans = (List<Loan>)ViewBag.OpenLoans;
+    var history = (List<Loan>)ViewBag.History;
+    var incidents = (List<Incident>)ViewBag.Incidents;
+}
+@if (Model == null)
+{
+    <div class="alert alert-warning">Tài khoản của bạn chưa liên kết thẻ thư viện. Vui lòng liên hệ thủ thư.</div>
+}
+else
+{
+    <h2 class="fw-bold mb-3">Hồ sơ của tôi</h2>
+    <div class="row g-4 mb-2">
+        <div class="col-lg-5">
+            <div class="lib-card">
+                <div class="small opacity-75 mb-4"><i class="bi bi-book-half me-1"></i>THẺ THƯ VIỆN</div>
+                <div class="num mb-4">@Model.CardNumber</div>
+                <div class="name">@Model.StudentName</div>
+                <div class="d-flex justify-content-between align-items-end mt-4 small">
+                    <span>Hết hạn: @Model.ExpiryDate.ToString("dd/MM/yyyy")</span>
+                    @if ((bool)ViewBag.Valid)
+                    {
+                        <span class="chip" style="background:rgba(255,255,255,.2);color:#fff">Đang hoạt động</span>
+                    }
+                    else
+                    {
+                        <span class="chip" style="background:#fee2e2;color:#991b1b">@ViewBag.Reason</span>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="panel p-4 h-100">
+                <div class="section-title">Quy định mượn</div>
+                <ul class="mb-0 lh-lg">
+                    <li>Mượn tối đa 3 cuốn cho mỗi lượt.</li>
+                    <li>Thời hạn mượn 15 ngày kể từ ngày mượn.</li>
+                    <li>Làm mất hoặc hỏng sách sẽ khóa thẻ đến khi bồi thường.</li>
+                    <li>Phải trả hết sách của phiếu mượn trước khi mượn tiếp.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel p-4 mb-4">
+        <div class="section-title">Sách đang mượn</div>
+        @if (!openLoans.Any(l => l.Items.Any(i => i.ReturnDate == null)))
+        {
+            <div class="empty-state py-4"><i class="bi bi-emoji-smile d-block"></i>Bạn không có sách nào đang mượn.</div>
+        }
+        <div class="row g-3">
+        @foreach (var l in openLoans)
+        {
+            foreach (var it in l.Items.Where(x => x.ReturnDate == null))
+            {
+                var days = (l.DueDate.Date - DateTime.Today).Days;
+                <div class="col-md-6 col-xl-4">
+                    <div class="d-flex gap-3 p-3 rounded-4 h-100" style="background:#f8fafc">
+                        <div class="thumb"><partial name="_Cover" model="it.BookCopy.Book" /></div>
+                        <div>
+                            <div class="fw-semibold">@it.BookCopy.Book.Title</div>
+                            <div class="small text-muted mb-2">Mã @it.BookCopy.Book.Code-@it.BookCopy.ControlNumber</div>
+                            <div class="small">Hạn trả: <strong>@l.DueDate.ToString("dd/MM/yyyy")</strong></div>
+                            @if (days < 0)
+                            {
+                                <span class="status st-lost mt-1">Quá hạn @(-days) ngày</span>
+                            }
+                            else if (days <= 3)
+                            {
+                                <span class="status st-damaged mt-1">Còn @days ngày</span>
+                            }
+                            else
+                            {
+                                <span class="status st-available mt-1">Còn @days ngày</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="section-title">Lịch sử mượn</div>
+            <div class="table-responsive">
+            <table class="table-modern table mb-0">
+                <thead><tr><th>Ngày mượn</th><th>Sách</th><th>Trạng thái</th></tr></thead>
+                <tbody>
+                @foreach (var l in history)
+                {
+                    foreach (var it in l.Items)
+                    {
+                        <tr>
+                            <td>@l.LoanDate.ToString("dd/MM/yyyy")</td>
+                            <td>@it.BookCopy.Book.Title</td>
+                            <td><span class="status st-available">Đã trả @(it.ReturnDate?.ToString("dd/MM/yyyy"))</span></td>
+                        </tr>
+                    }
+                }
+                @if (!history.Any())
+                {
+                    <tr><td colspan="3" class="text-center text-muted py-4">Chưa có lịch sử.</td></tr>
+                }
+                </tbody>
+            </table>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="section-title">Sự cố mất / hỏng</div>
+            @if (!incidents.Any())
+            {
+                <div class="panel p-4 text-muted">Không có sự cố nào.</div>
+            }
+            @foreach (var i in incidents)
+            {
+                <div class="panel p-3 mb-2 d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fw-semibold">@i.BookCopy.Book.Title</div>
+                        <div class="small text-muted">@Labels.Incident(i.Type) · @i.ReportedDate.ToString("dd/MM/yyyy")</div>
+                    </div>
+                    @if (i.CompensatedDate == null)
+                    {
+                        <span class="status st-lost">Chưa bồi thường</span>
+                    }
+                    else
+                    {
+                        <span class="status st-available">Đã bồi thường</span>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}

@@ -1,0 +1,18 @@
+@{ ViewData["Title"] = "Mượn sách"; }
+<h2 class="fw-bold mb-3">Mượn sách tại quầy</h2>
+<form asp-action="Borrow" method="post" class="panel p-4 p-md-5" style="max-width:680px">
+    <div class="mb-4">
+        <label class="form-label">Số thẻ thư viện *</label>
+        <input name="cardNumber" class="form-control" required autofocus />
+    </div>
+    <label class="form-label">Mã sách * <span class="text-muted small fw-normal">(dạng MãSách-SốKiểmSoát, ví dụ S001-002)</span></label>
+    @for (int i = 0; i < 3; i++)
+    {
+        <input name="copyCodes" class="form-control mb-2" placeholder="Ví dụ: S001-002" />
+    }
+    <div class="alert alert-info small mt-3">Thẻ phải còn hiệu lực, không còn phiếu mượn đang mở. Thời hạn 15 ngày.</div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-brand px-4">Xác nhận mượn</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Quay lại</a>
+    </div>
+</form>

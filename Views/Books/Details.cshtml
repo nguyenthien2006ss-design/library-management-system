@@ -1,0 +1,74 @@
+@model Book
+@{ ViewData["Title"] = Model.Title; }
+<a asp-action="Index" class="small text-decoration-none">← Danh mục sách</a>
+<div class="row g-4 mt-1">
+    <div class="col-md-4 col-lg-3">
+        <div class="panel p-4 text-center">
+            <div class="cover-wrap"><partial name="_Cover" model="Model" /></div>
+            <div class="mt-3 d-flex gap-2 justify-content-center">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-primary">Sửa</a>
+                <form asp-action="Delete" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Xóa sách này?');">
+                    <button class="btn btn-sm btn-outline-danger">Xóa</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8 col-lg-9">
+        <div class="panel p-4 mb-4">
+            <div class="mb-2"><span class="chip">@Model.MaterialType?.Name</span> <span class="chip">@Model.Category</span></div>
+            <h2 class="fw-bold mb-1">@Model.Title</h2>
+            <div class="text-muted mb-3">@Model.Author</div>
+            <div class="row small g-3 mb-3">
+                <div class="col-sm-3"><div class="text-muted">Mã sách</div><strong>@Model.Code</strong></div>
+                <div class="col-sm-5"><div class="text-muted">Nhà xuất bản</div><strong>@Model.Publisher</strong></div>
+                <div class="col-sm-4"><div class="text-muted">Năm xuất bản</div><strong>@Model.PublishYear</strong></div>
+            </div>
+            <p class="mb-0 lh-lg">@Model.Description</p>
+        </div>
+
+        <div class="panel p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="section-title mb-0">Đầu sách (bản sao vật lý)</div>
+                <form asp-action="AddCopy" method="post">
+                    <input type="hidden" name="bookId" value="@Model.Id" />
+                    <button class="btn btn-sm btn-success"><i class="bi bi-plus-lg me-1"></i>Thêm bản sao</button>
+                </form>
+            </div>
+            <div class="table-responsive">
+            <table class="table-modern table mb-0">
+                <thead><tr><th>Số KS</th><th>Tình trạng</th><th>Ghi chú</th><th style="min-width:360px">Cập nhật</th></tr></thead>
+                <tbody>
+                @foreach (var c in Model.Copies.OrderBy(c => c.ControlNumber))
+                {
+                    <tr>
+                        <td><strong>@c.ControlNumber</strong><div class="small text-muted">@Model.Code-@c.ControlNumber</div></td>
+                        <td><span class="status st-@c.Status.ToString().ToLower()">@Labels.Copy(c.Status)</span></td>
+                        <td class="small">@c.Note</td>
+                        <td>
+                            @if (c.Status != CopyStatus.OnLoan)
+                            {
+                                <form asp-action="UpdateCopy" method="post" class="d-flex gap-1">
+                                    <input type="hidden" name="bookId" value="@Model.Id" />
+                                    <input type="hidden" name="copyId" value="@c.Id" />
+                                    <select name="status" class="form-select form-select-sm" style="max-width:110px">
+                                        <option value="0" selected='@(c.Status == CopyStatus.Available)'>Còn</option>
+                                        <option value="2" selected='@(c.Status == CopyStatus.Lost)'>Mất</option>
+                                        <option value="3" selected='@(c.Status == CopyStatus.Damaged)'>Hỏng</option>
+                                    </select>
+                                    <input name="note" class="form-control form-control-sm" placeholder="Ghi chú" value="@c.Note" />
+                                    <button class="btn btn-sm btn-brand">Lưu</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <span class="small text-muted">Đang cho mượn, trả qua mục Mượn / Trả</span>
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+            </div>
+        </div>
+    </div>
+</div>
