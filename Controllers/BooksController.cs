@@ -10,6 +10,7 @@ public class BooksController : AppController
     // FR14 / NFR03: tìm nhanh
     public async Task<IActionResult> Index(string q, int? materialTypeId)
     {
+
         var query = _db.Books.Include(b => b.MaterialType).Include(b => b.Copies).AsQueryable();
         if (!string.IsNullOrWhiteSpace(q))
         {
@@ -41,6 +42,9 @@ public class BooksController : AppController
     [HttpPost]
     public async Task<IActionResult> Save(Book book)
     {
+        book.Code = book.Code?.Trim() ?? "";
+        book.Title = book.Title?.Trim() ?? "";
+        book.Author = book.Author?.Trim() ?? "";
         if (await _db.Books.AnyAsync(b => b.Code == book.Code && b.Id != book.Id))
             ModelState.AddModelError(nameof(Book.Code), "Mã sách đã tồn tại.");
         if (!ModelState.IsValid)
