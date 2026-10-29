@@ -7,22 +7,28 @@ public class BooksController : AppController
     private readonly LibraryService _svc;
     public BooksController(AppDbContext db, LibraryService svc) { _db = db; _svc = svc; }
 
-    // FR14 / NFR03: tìm nhanh
+    // FR14 / NFR03: tìm nhanh (không phân biệt hoa thường - PBI03)
     public async Task<IActionResult> Index(string q, int? materialTypeId)
     {
-
         var query = _db.Books.Include(b => b.MaterialType).Include(b => b.Copies).AsQueryable();
+        if (materialTypeId is > 0) query = query.Where(b => b.MaterialTypeId == materialTypeId);
+
+        var books = await query.OrderBy(b => b.Title).ToListAsync();
         if (!string.IsNullOrWhiteSpace(q))
         {
             q = q.Trim();
-            query = query.Where(b => b.Code.Contains(q) || b.Title.Contains(q) || b.Author.Contains(q) || b.Category.Contains(q));
+            var k = q.ToLowerInvariant();
+            books = books.Where(b =>
+                (b.Code ?? "").ToLowerInvariant().Contains(k) ||
+                (b.Title ?? "").ToLowerInvariant().Contains(k) ||
+                (b.Author ?? "").ToLowerInvariant().Contains(k) ||
+                (b.Category ?? "").ToLowerInvariant().Contains(k)).ToList();
         }
-        if (materialTypeId is > 0) query = query.Where(b => b.MaterialTypeId == materialTypeId);
 
         ViewBag.Q = q;
         ViewBag.Selected = materialTypeId;
         ViewBag.MaterialTypes = await _db.MaterialTypes.OrderBy(t => t.Id).ToListAsync();
-        return View(await query.OrderBy(b => b.Title).ToListAsync());
+        return View(books);
     }
 
     public async Task<IActionResult> Create()
