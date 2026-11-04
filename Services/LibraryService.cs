@@ -48,7 +48,8 @@ public class LibraryService
         if (copy == null) return "Không tìm thấy đầu sách.";
         if (copy.Status == CopyStatus.OnLoan) return "Đầu sách đang cho mượn, hãy thực hiện qua chức năng Trả sách.";
         if (status == CopyStatus.OnLoan) return "Trạng thái 'Cho mượn' chỉ được tạo qua chức năng Mượn sách.";
-
+        note = (note ?? "").Trim();
+        if (note.Length > 300) return "Ghi chú tối đa 300 ký tự.";
         var old = copy.Status;
         copy.Status = status;
         copy.Note = note ?? "";
