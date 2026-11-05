@@ -116,7 +116,11 @@ public class LibraryService
 
         inc.CompensatedDate = DateTime.Now;
         var stillOpen = await _db.Incidents.AnyAsync(i => i.CardId == inc.CardId && i.CompensatedDate == null && i.Id != inc.Id);
-        if (!stillOpen) inc.Card.IsUsable = true;
+        if (!stillOpen && inc.Card.LockedByIncident)
+        {
+            inc.Card.IsUsable = true;
+            inc.Card.LockedByIncident = false;
+        }
 
         Audit(user, "Ghi nhận bồi thường", "Incident", $"Thẻ {inc.Card.CardNumber}");
         await _db.SaveChangesAsync();
@@ -210,7 +214,7 @@ public class LibraryService
         item.ReturnDate = DateTime.Now;   // sách không còn ở tay sinh viên dưới dạng đang mượn
         copy.Status = type == IncidentType.Lost ? CopyStatus.Lost : CopyStatus.Damaged;   // FR04
         copy.Note = note ?? "";
-        card.IsUsable = false;            // FR07: khóa thẻ đến khi bồi thường
+        if (card.IsUsable) { card.IsUsable = false; card.LockedByIncident = true; }
         Audit(user, "Khóa thẻ tự động", "LibraryCard", card.CardNumber);
 
         _db.Incidents.Add(new Incident
