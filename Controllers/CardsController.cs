@@ -23,6 +23,8 @@ public class CardsController : AppController
 
     // FR05: tạo thẻ
     [HttpPost]
+    card.CardNumber = (card.CardNumber ?? "").Trim();
+    card.StudentName = (card.StudentName ?? "").Trim();
     public async Task<IActionResult> Create(LibraryCard card)
     {
         if (await _db.LibraryCards.AnyAsync(c => c.CardNumber == card.CardNumber))
