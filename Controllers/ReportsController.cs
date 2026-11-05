@@ -13,7 +13,7 @@ public class ReportsController : AppController
     {
         var y = year ?? DateTime.Today.Year;
         ViewBag.Year = y;
-        return View(await _svc.GetIncidentsByYearAsync(y));
+        return View(await _svc.GetLiquidationAsync(y));
     }
 
     public async Task<IActionResult> LiquidationCsv(int year)

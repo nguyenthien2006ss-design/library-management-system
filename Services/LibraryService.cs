@@ -3,6 +3,8 @@ namespace LibraryManagement.Services;
 public record CountRow(string Label, int Count);
 public record StatsResult(List<CountRow> ByBook, List<CountRow> ByStudent, List<CountRow> ByMonth);
 
+public record LiquidationRow(BookCopy Copy, Incident Incident);
+
 /// <summary>Toàn bộ nghiệp vụ thư viện. Ràng buộc được kiểm tra tại đây (NFR01).</summary>
 public class LibraryService
 {
@@ -242,7 +244,29 @@ public class LibraryService
     }
 
     // ---------- Báo cáo & thống kê (FR13, FR14) ----------
+    /// <summary>PBI14: mọi đầu sách đang Mất hoặc Hỏng, kèm sự cố gần nhất trong năm (nếu có).</summary>
+    public async Task<List<LiquidationRow>> GetLiquidationAsync(int year)
+    {
+        var start = new DateTime(year, 1, 1);
+        var end = start.AddYears(1);
 
+        var copies = await _db.BookCopies
+            .Include(c => c.Book)
+            .Where(c => c.Status == CopyStatus.Lost || c.Status == CopyStatus.Damaged)
+            .OrderBy(c => c.Book.Code).ThenBy(c => c.ControlNumber)
+            .ToListAsync();
+
+        var result = new List<LiquidationRow>();
+        foreach (var c in copies)
+        {
+            var inc = await _db.Incidents.Include(i => i.Card)
+                .Where(i => i.BookCopyId == c.Id && i.ReportedDate >= start && i.ReportedDate < end)
+                .OrderByDescending(i => i.ReportedDate)
+                .FirstOrDefaultAsync();
+            result.Add(new LiquidationRow(c, inc));
+        }
+        return result;
+    }
     public Task<List<Incident>> GetIncidentsByYearAsync(int year)
     {
         var start = new DateTime(year, 1, 1);
