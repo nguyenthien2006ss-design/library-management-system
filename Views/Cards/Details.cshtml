@@ -16,7 +16,7 @@
         <div class="panel p-4 d-flex justify-content-between align-items-center">
             <div>
                 <div class="text-muted small">Tình trạng sử dụng</div>
-                <strong>@(Model.IsUsable ? "Sử dụng được" : "Không sử dụng được")</strong>
+                <strong>@(Model.IsUsable ? "Sử dụng được" : "Thẻ không sử dụng được")</strong>
             </div>
             <form asp-action="ToggleUsable" asp-route-id="@Model.Id" method="post">
                 <button class='btn @(Model.IsUsable ? "btn-outline-danger" : "btn-outline-success")'>@(Model.IsUsable ? "Khóa thẻ" : "Mở khóa")</button>
