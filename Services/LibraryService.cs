@@ -211,6 +211,7 @@ public class LibraryService
         copy.Status = type == IncidentType.Lost ? CopyStatus.Lost : CopyStatus.Damaged;   // FR04
         copy.Note = note ?? "";
         card.IsUsable = false;            // FR07: khóa thẻ đến khi bồi thường
+        Audit(user, "Khóa thẻ tự động", "LibraryCard", card.CardNumber);
 
         _db.Incidents.Add(new Incident
         {
