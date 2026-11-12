@@ -136,6 +136,10 @@ public class LibraryService
     public Task<bool> HasOpenLoanAsync(int cardId) =>
         _db.LoanItems.AnyAsync(i => i.Loan.CardId == cardId && i.ReturnDate == null);
 
+    /// <summary>
+    /// FR09-FR10: lập phiếu mượn. Đầu sách được chiếm bằng UPDATE có điều kiện trong giao dịch,
+    /// nên hai yêu cầu cùng lúc không thể cùng mượn một cuốn.
+    /// </summary>
     public async Task<string> BorrowAsync(string cardNumber, string[] codes, string user)
     {
         var card = await _db.LibraryCards.FirstOrDefaultAsync(c => c.CardNumber == cardNumber);
@@ -153,14 +157,30 @@ public class LibraryService
         if (await HasOpenLoanAsync(card.Id))
             return "Sinh viên còn phiếu mượn đang mở (chưa trả hết sách). Hãy trả hết trước khi mượn tiếp.";  // FR10
 
-        var copies = new List<BookCopy>();
+        var copyList = new List<BookCopy>();
         foreach (var code in list)
         {
             var copy = await FindCopyByCodeAsync(code);
             if (copy == null) return $"Không tìm thấy đầu sách mã '{code}'.";
             if (copy.Status != CopyStatus.Available)
                 return $"Đầu sách '{code}' đang ở trạng thái: {Labels.Copy(copy.Status)}.";
-            copies.Add(copy);
+            copyList.Add(copy);
+        }
+
+        await using var tx = await _db.Database.BeginTransactionAsync();
+
+        // Chiếm từng đầu sách bằng UPDATE có điều kiện (chỉ khi còn Available).
+        // Nếu có yêu cầu khác vừa chiếm trước, số dòng cập nhật = 0 và giao dịch được hủy.
+        foreach (var copy in copyList)
+        {
+            var claimed = await _db.BookCopies
+                .Where(c => c.Id == copy.Id && c.Status == CopyStatus.Available)
+                .ExecuteUpdateAsync(s => s.SetProperty(c => c.Status, CopyStatus.OnLoan));
+            if (claimed == 0)
+            {
+                await tx.RollbackAsync();
+                return $"Đầu sách '{copy.Book.Code}-{copy.ControlNumber}' vừa được mượn bởi người khác. Vui lòng thử lại.";
+            }
         }
 
         var today = DateTime.Today;
@@ -171,15 +191,13 @@ public class LibraryService
             DueDate = today.AddDays(LoanDays),   // FR09: tối đa 15 ngày
             Status = LoanStatus.Open
         };
-        foreach (var copy in copies)
-        {
-            copy.Status = CopyStatus.OnLoan;     // FR04
-            loan.Items.Add(new LoanItem { BookCopy = copy });
-        }
+        foreach (var copy in copyList)
+            loan.Items.Add(new LoanItem { BookCopyId = copy.Id });
 
         _db.Loans.Add(loan);
         Audit(user, "Mượn sách", "Loan", $"Thẻ {card.CardNumber}: {string.Join(", ", list)} (hạn {loan.DueDate:dd/MM/yyyy})");
         await _db.SaveChangesAsync();
+        await tx.CommitAsync();
         return null;
     }
 
