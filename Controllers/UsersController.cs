@@ -27,7 +27,13 @@ public class UsersController : AppController
     public async Task<IActionResult> Create(string userName, string fullName, string password, string role)
     {
         if (!Roles.Contains(role)) role = "Librarian";
-        var user = new AppUser { UserName = (userName ?? "").Trim(), FullName = fullName ?? "", Email = $"{userName}@library.local" };
+        var name = (userName ?? "").Trim();
+        var user = new AppUser
+        {
+            UserName = name,
+            FullName = fullName ?? "",
+            Email = $"{name}@library.local"
+        };
         var result = await _users.CreateAsync(user, password ?? "");
         if (!result.Succeeded)
         {
@@ -45,6 +51,14 @@ public class UsersController : AppController
         if (!Roles.Contains(role)) return RedirectToAction(nameof(Index));
         var user = await _users.FindByIdAsync(userId);
         if (user == null) return NotFound();
+
+        // Không cho admin tự hạ quyền của chính mình (tránh hệ thống không còn quản trị viên)
+        var me = await _users.GetUserAsync(User);
+        if (me != null && me.Id == user.Id && role != "Admin")
+        {
+            TempData["Error"] = "Không thể tự hạ quyền của chính mình.";
+            return RedirectToAction(nameof(Index));
+        }
 
         await _users.RemoveFromRolesAsync(user, await _users.GetRolesAsync(user));
         await _users.AddToRoleAsync(user, role);
