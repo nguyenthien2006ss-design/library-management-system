@@ -51,6 +51,8 @@ public class LibraryService
         if (status == CopyStatus.OnLoan) return "Trạng thái 'Cho mượn' chỉ được tạo qua chức năng Mượn sách.";
         note = (note ?? "").Trim();
         if (note.Length > 300) return "Ghi chú tối đa 300 ký tự.";
+        if ((status == CopyStatus.Lost || status == CopyStatus.Damaged) && note.Length == 0)
+            return "Vui lòng nhập ghi chú khi đánh dấu Mất hoặc Hỏng.";
         var old = copy.Status;
         copy.Status = status;
         copy.Note = note ?? "";
