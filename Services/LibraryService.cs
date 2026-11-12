@@ -1,8 +1,7 @@
 namespace LibraryManagement.Services;
 
 public record CountRow(string Label, int Count);
-public record StatsResult(List<CountRow> ByBook, List<CountRow> ByStudent, List<CountRow> ByMonth);
-
+public record StatsResult(List<CountRow> ByBook, List<CountRow> ByStudent, List<CountRow> ByMonth, List<CountRow> ByStatus);
 public record LiquidationRow(BookCopy Copy, Incident Incident);
 
 /// <summary>Toàn bộ nghiệp vụ thư viện. Ràng buộc được kiểm tra tại đây (NFR01).</summary>
@@ -244,6 +243,7 @@ public class LibraryService
     }
 
     // ---------- Báo cáo & thống kê (FR13, FR14) ----------
+
     /// <summary>PBI14: mọi đầu sách đang Mất hoặc Hỏng, kèm sự cố gần nhất trong năm (nếu có).</summary>
     public async Task<List<LiquidationRow>> GetLiquidationAsync(int year)
     {
@@ -267,6 +267,7 @@ public class LibraryService
         }
         return result;
     }
+
     public Task<List<Incident>> GetIncidentsByYearAsync(int year)
     {
         var start = new DateTime(year, 1, 1);
@@ -300,6 +301,15 @@ public class LibraryService
             .OrderBy(g => g.Key)
             .Select(g => new CountRow(g.Key, g.Count())).ToList();
 
-        return new StatsResult(byBook, byStudent, byMonth);
+        var today = DateTime.Today;
+        var byStatus = new List<CountRow>
+        {
+            new("Đang mượn (chưa quá hạn)", items.Count(i => i.ReturnDate == null && i.Loan.DueDate.Date >= today)),
+            new("Quá hạn chưa trả", items.Count(i => i.ReturnDate == null && i.Loan.DueDate.Date < today)),
+            new("Đã trả hoặc báo mất/hỏng", items.Count(i => i.ReturnDate != null)),
+            new("Trả quá hạn", items.Count(i => i.ReturnDate != null && i.ReturnDate.Value.Date > i.Loan.DueDate.Date)),
+        };
+
+        return new StatsResult(byBook, byStudent, byMonth, byStatus);
     }
 }
